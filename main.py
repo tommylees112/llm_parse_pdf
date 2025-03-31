@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from tqdm import tqdm  # Import tqdm for progress bar
 
+from aggregator import FileAggregator  # Import the new aggregator class
+
 # Import functions from the new modules
 from batch_tracker import BatchTracker  # Import the moved class
 from google_drive import load_pdf_from_drive
@@ -40,6 +42,7 @@ async def process_batch(
     start_page: int,
     end_page: int,
     tracker: BatchTracker,
+    system_prompt: str,
     model: Literal[
         "gemini-1.5-flash", "gemini-2.5-pro-exp-03-25"
     ] = "gemini-2.5-pro-exp-03-25",
@@ -63,7 +66,7 @@ async def process_batch(
 
         # This is a CPU-bound task, so run it in a thread pool to avoid blocking the event loop
         extracted_text = await asyncio.to_thread(
-            process_batch_with_langchain, batch_file_path, model
+            process_batch_with_langchain, batch_file_path, model, system_prompt
         )
 
         # Write the output to a markdown file
@@ -86,6 +89,7 @@ async def generate_async(
     pdf_reader: PyPDF2.PdfReader,
     total_pages: int,
     file_id: str,
+    system_prompt: str,
     batch_size: int = 10,
     max_concurrent_batches: int = 3,
     model: Literal[
@@ -98,6 +102,7 @@ async def generate_async(
         pdf_reader: PyPDF2.PdfReader instance with the loaded PDF
         total_pages: Total number of pages in the PDF
         file_id: Unique identifier for the PDF file
+        system_prompt: The system prompt to guide the language model
         batch_size: Number of pages to process in each batch
         max_concurrent_batches: Maximum number of batches to process concurrently
         model: Optional model name to use with Langchain
@@ -125,6 +130,7 @@ async def generate_async(
                     batch["start_page"],
                     batch["end_page"],
                     tracker,
+                    system_prompt,
                     model,
                 )
                 # Update progress bar after each batch is processed
@@ -155,6 +161,7 @@ def generate(
     pdf_reader: PyPDF2.PdfReader,
     total_pages: int,
     file_id: str,
+    system_prompt: str,
     batch_size: int = 10,
     max_concurrent_batches: int = 3,
     model: Literal[
@@ -165,11 +172,20 @@ def generate(
     if not pdf_reader or total_pages <= 0 or not file_id:
         logger.error("Invalid PDF reader, page count, or file ID")
         raise ValueError("Valid PDF reader, page count, and file ID must be provided")
+    if not system_prompt:
+        logger.error("System prompt must be provided")
+        raise ValueError("Valid system prompt must be provided")
 
     # Run the async function
     asyncio.run(
         generate_async(
-            pdf_reader, total_pages, file_id, batch_size, max_concurrent_batches, model
+            pdf_reader,
+            total_pages,
+            file_id,
+            system_prompt,
+            batch_size,
+            max_concurrent_batches,
+            model,
         )
     )
 
@@ -244,6 +260,25 @@ if __name__ == "__main__":
     # Parse arguments using the dedicated function
     args = parse_args()
 
+    # Read system prompt from file
+    system_prompt_file = "system_prompt.txt"
+    system_prompt = ""
+    try:
+        with open(system_prompt_file, "r", encoding="utf-8") as f:
+            system_prompt = f.read().strip()
+        if not system_prompt:
+            logger.warning(f"{system_prompt_file} is empty. Using default behavior.")
+        else:
+            logger.info(f"Loaded system prompt from {system_prompt_file}")
+    except FileNotFoundError:
+        logger.error(f"System prompt file not found: {system_prompt_file}. Exiting.")
+        exit(1)
+    except Exception as e:
+        logger.error(
+            f"Error reading system prompt file {system_prompt_file}: {str(e)}. Exiting."
+        )
+        exit(1)
+
     # Determine the source and source type
     source = ""
     is_drive_file = True
@@ -283,7 +318,14 @@ if __name__ == "__main__":
         pdf_reader,
         total_pages,
         file_id,
+        system_prompt,
         args.batch_size,
         args.max_concurrent,
         args.model,
     )
+
+    # Aggregate the generated markdown files
+    logger.info(f"Starting aggregation for file_id: {file_id}")
+    aggregator = FileAggregator(file_id)
+    aggregator.aggregate_markdown_files()
+    logger.info(f"Aggregation complete. Final file: {aggregator.output_file}")

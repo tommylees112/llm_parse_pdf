@@ -11,6 +11,24 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_google_genai import ChatGoogleGenerativeAI
 from loguru import logger
 
+SYSTEM_PROMPT_DEFAULT = """
+You will extract text from a PDF document while preserving the original formatting, including paragraphs, bullet points, and other text structures. 
+
+Ignore any watermarks with the text "Preview" that spans diagonally across pages.
+
+The extracted text must remain true to the original context, without errors or hallucinations. Accuracy is critical.
+
+For each page, categorize the extracted text using semantic tags:
+- Use <main> to enclose the main body text.
+- Use <footnotes> to enclose any footnotes.
+- Use <notes> to enclose any side notes or marginal notes.
+- Use <image> to enclose descriptions of images.
+
+Convert any tables to Markdown table format.
+
+Output the cleaned text in plain text format with proper formatting to distinguish between different elements.
+"""
+
 
 def process_pdf_batch(
     pdf_reader: PyPDF2.PdfReader, start_page: int, end_page: int
@@ -57,12 +75,15 @@ def process_pdf_batch(
         raise
 
 
-def process_batch_with_langchain(batch_file_path: str, model_name: str) -> str:
+def process_batch_with_langchain(
+    batch_file_path: str, model_name: str, system_prompt: str = SYSTEM_PROMPT_DEFAULT
+) -> str:
     """Processes a PDF batch file using LangChain with Gemini and returns the extracted text.
 
     Args:
         batch_file_path: Path to the temporary PDF file containing the batch
         model_name: Name of the Gemini model to use
+        system_prompt: The system prompt to guide the language model
 
     Returns:
         The extracted text content as a string
@@ -85,23 +106,7 @@ def process_batch_with_langchain(batch_file_path: str, model_name: str) -> str:
         chat = ChatGoogleGenerativeAI(model=model_name, temperature=0)
 
         # Define system instruction - cleaner formatting
-        system_instruction = """
-You will extract text from a PDF document while preserving the original formatting, including paragraphs, bullet points, and other text structures. 
-
-Ignore any watermarks with the text "Preview" that spans diagonally across pages.
-
-The extracted text must remain true to the original context, without errors or hallucinations. Accuracy is critical.
-
-For each page, categorize the extracted text using semantic tags:
-- Use <main> to enclose the main body text.
-- Use <footnotes> to enclose any footnotes.
-- Use <notes> to enclose any side notes or marginal notes.
-- Use <image> to enclose descriptions of images.
-
-Convert any tables to Markdown table format.
-
-Output the cleaned text in plain text format with proper formatting to distinguish between different elements.
-"""
+        system_instruction = system_prompt
 
         # Create messages for the chat - For Gemini, combine system and user message
         messages = [
@@ -204,6 +209,11 @@ if __name__ == "__main__":
     pdf_reader: Optional[PyPDF2.PdfReader] = None
     temp_batch_path: Optional[str] = None
 
+    system_prompt_file = "./system_prompt.txt"
+    system_prompt = ""
+    with open(system_prompt_file, "r", encoding="utf-8") as f:
+        system_prompt = f.read().strip()
+
     try:
         # --- Step 1: Create PdfReader ---
         logger.info(f"Opening source PDF: {source_pdf_path}")
@@ -233,6 +243,7 @@ if __name__ == "__main__":
             extracted_text = process_batch_with_langchain(
                 batch_file_path=temp_batch_path,
                 model_name=model_name,
+                system_prompt=system_prompt,
             )
 
             # --- Step 4: Write the extracted text to a markdown file ---

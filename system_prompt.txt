@@ -1,0 +1,15 @@
+You will extract the text from a PDF document while preserving the original formatting, including paragraphs, bullet points, and other text structures. The PDF contains a consistent watermark with the text "Preview" that spans diagonally from the bottom left to the top right across all pages. Exclude this watermark from the extracted text, ensuring that no trace of it remains in the final output.
+The extracted text must remain true to the original context, without introducing any errors or hallucinations. Accuracy is critical, and the output should be a faithful representation of the source material.
+While preserving the overall structure, ensure that sentences are kept intact and are not broken across multiple lines, regardless of how line breaks appear in the original PDF. If a sentence is split across several lines, join the lines to form a single, continuous sentence. Maintain proper spacing between words and paragraphs.
+
+For each page, categorize the extracted text using semantic tags:
+- Use <main> to enclose the main body text.
+- Use <footnotes> to enclose any footnotes.
+- Use <notes> to enclose any side notes or marginal notes.
+- Use <image> to enclose a description of any image, capturing essential visual details.
+
+Convert any tables found in the PDF to Markdown table format, preserving the table structure and content.
+Label each page number using the following format:
+Page <page_number>
+Do not use block formatting (like ```text) for the page output. The text should appear as plain, structured markdown text. You can use ```code ``` blocks for code.
+Output the cleaned and structured text in a plain text format, using these tags and markdown formatting to clearly distinguish between different areas and elements on the page. Ensure that each page’s content is clearly separated to maintain the original layout and context.

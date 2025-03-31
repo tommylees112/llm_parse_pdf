@@ -44,7 +44,6 @@ wheels/
 # data
 *.pdf
 *.md
-*.txt
 *.json
 *.csv
 *.jsonl
