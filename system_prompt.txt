@@ -10,6 +10,7 @@ For each page, categorize the extracted text using semantic tags:
 
 Convert any tables found in the PDF to Markdown table format, preserving the table structure and content.
 Label each page number using the following format:
-Page <page_number>
+**Page <page_number>**
+
 Do not use block formatting (like ```text) for the page output. The text should appear as plain, structured markdown text. You can use ```code ``` blocks for code.
 Output the cleaned and structured text in a plain text format, using these tags and markdown formatting to clearly distinguish between different areas and elements on the page. Ensure that each page’s content is clearly separated to maintain the original layout and context.
