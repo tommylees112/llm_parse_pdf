@@ -76,7 +76,7 @@ def process_pdf_batch(
 
 
 def process_batch_with_langchain(
-    batch_file_path: str, model_name: str, system_prompt: str = SYSTEM_PROMPT_DEFAULT
+    batch_file_path: str, model_name: str, system_prompt: Optional[str] = None
 ) -> str:
     """Processes a PDF batch file using LangChain with Gemini and returns the extracted text.
 
@@ -91,6 +91,10 @@ def process_batch_with_langchain(
     logger.info(
         f"Processing batch file {batch_file_path} with LangChain using {model_name}"
     )
+
+    if system_prompt is None:
+        logger.warning("No system prompt provided, using default system prompt")
+        system_prompt = SYSTEM_PROMPT_DEFAULT
 
     extracted_text = ""  # Initialize empty string to collect text
 

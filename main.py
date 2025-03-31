@@ -270,6 +270,13 @@ if __name__ == "__main__":
             logger.warning(f"{system_prompt_file} is empty. Using default behavior.")
         else:
             logger.info(f"Loaded system prompt from {system_prompt_file}")
+            # Log the system prompt content, truncating if it's too long
+            prompt_preview = (
+                system_prompt[:200] + "..."
+                if len(system_prompt) > 200
+                else system_prompt
+            )
+            logger.info(f"System prompt: {prompt_preview}")
     except FileNotFoundError:
         logger.error(f"System prompt file not found: {system_prompt_file}. Exiting.")
         exit(1)
