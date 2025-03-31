@@ -38,3 +38,13 @@ wheels/
 # Virtual environments
 .venv
 
+
+
+# data
+*.pdf
+*.md
+*.txt
+*.json
+*.csv
+*.jsonl
+*.jsonl.gz
