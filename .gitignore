@@ -38,7 +38,8 @@ wheels/
 # Virtual environments
 .venv
 
-
+.terraform.lock.hcl
+*lock*
 
 # data
 *.pdf
