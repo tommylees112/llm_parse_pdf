@@ -197,6 +197,10 @@ if __name__ == "__main__":
     # --- Setup ---
     # Set API key as environment variable for LangChain
     os.environ["GOOGLE_API_KEY"] = gemini_api_key
+    logger.debug(f"Using model: {model_name}")
+    logger.debug(
+        f"Environment variable set: GOOGLE_API_KEY={os.environ.get('GOOGLE_API_KEY')[:4] if os.environ.get('GOOGLE_API_KEY') else 'None'}"
+    )
     pdf_reader: Optional[PyPDF2.PdfReader] = None
     temp_batch_path: Optional[str] = None
 

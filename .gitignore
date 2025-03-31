@@ -48,3 +48,6 @@ wheels/
 *.csv
 *.jsonl
 *.jsonl.gz
+data/
+markdown/
+app.log
