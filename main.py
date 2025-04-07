@@ -191,7 +191,20 @@ def generate(
 
 
 def parse_args() -> argparse.Namespace:
-    """Parses command-line arguments."""
+    """Parses command-line arguments.
+
+    Required Arguments (one of):
+        --drive-id STR       The Google Drive file ID of the PDF to process
+        --file STR           Path to a local PDF file to process
+
+    Optional Arguments:
+        --batch-size INT     The number of pages to process in each batch (default: 10)
+        --max-concurrent INT Maximum number of batches to process concurrently (default: 3)
+        --model STR          The LangChain model to use (default: gemini-2.5-pro-exp-03-25)
+
+    Returns:
+        argparse.Namespace: Parsed command-line arguments
+    """
     parser = argparse.ArgumentParser(
         description="Extract text from a PDF using LangChain."
     )

@@ -2,6 +2,9 @@
 
 > Ever wished your PDFs could talk? Now they can! PDFWhisperer uses Google's Gemini AI to transform those stubborn PDF documents into beautiful, structured Markdown text. Smart batching, fault-tolerant processing, and Google Drive integration make handling even the largest documents a breeze. No more copy-paste headaches - just magical text extraction!
 
+Alternatives:
+- [marker](https://github.com/VikParuchuri/marker)
+
 # PDF Processing Application 📄➡️📝
 
 This application extracts text from PDF documents using Google's Gemini models via LangChain. It supports processing large PDFs by splitting them into batches, processing them concurrently, and tracking progress to allow for restarts without re-processing completed batches.
