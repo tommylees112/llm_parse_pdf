@@ -1,0 +1,80 @@
+"""
+Extract obituary data from text with the following fields:
+
+Required fields:
+- name: Full name of the deceased
+- obituary_text: The complete obituary text
+- dates: Birth and death years
+
+Derived fields:
+- age: Calculated as (death_year - birth_year)
+- word_count: Number of words in the obituary text
+
+Note: The format varies throughout the document, so robust regex patterns are needed
+to correctly separate each obituary and extract the key information.
+
+Example:
+{
+    "obituary_id": "5",
+    "name": "Robert (Bob) Alexander Creswell",
+    "obituary_text": "...",
+    "word_count": 1363,
+    "age": 62  # Calculated from dates (2010-1948)
+}
+"""
+
+1. **File Input and Initial Setup**
+   - The script reads from a markdown file located at `./data/AlpineJournalObituary/AlpineJournalObituary.md`
+   - Performs basic validation to ensure the directory and file exist
+
+2. **Text Extraction**
+   - Reads the entire markdown file into memory
+   - Uses regex to extract all text between `<main>` tags
+   - Joins all these `<main>` sections into a single continuous text
+
+3. **Obituary Identification**
+   - Uses regex to find date ranges that mark obituaries (e.g., "1913 - 2010" or "**1938-2017**")
+   - These date ranges are used as markers to separate individual obituaries
+   - Creates boundaries for each obituary using the line starts where dates are found
+
+4. **Name Extraction**
+   - For each obituary section:
+     - Looks for the line containing the date pattern
+     - Attempts to extract the name using several strategies:
+       a. Checks the line containing the date
+       b. Looks at the previous line if it contains asterisks
+       c. Removes asterisks and date patterns to clean up the name
+     - Falls back to "Unknown" if no name can be found
+
+5. **Data Processing**
+   - For each obituary, creates a structured dictionary containing:
+     - obituary_id (sequential number)
+     - name
+     - full obituary text
+     - word count (simple split and count)
+   - Collects all obituaries into a list
+
+6. **Data Storage**
+   - Saves the processed obituaries to a JSON file (`obituaries.json`)
+   - Each obituary is stored with its metadata and full text
+
+7. **Statistical Analysis**
+   - Loads the JSON data into a pandas DataFrame
+   - Removes the first row (appears to be for data cleaning)
+   - Calculates key statistics about word counts:
+     - Mean
+     - Median
+     - Minimum
+     - Maximum
+     - 5th percentile
+     - 95th percentile
+
+8. **Visualization**
+   - Creates a histogram of obituary word counts
+   - Adds vertical lines for key statistics
+   - Includes a text box with numerical statistics
+   - Adds proper labels, title, and legend
+   - Saves the plot as a PNG file (`obituary_word_count_histogram.png`)
+   - Displays the plot
+
+The overall goal appears to be analyzing the length distribution of obituaries in the Alpine Journal, providing both detailed data (JSON) and visual representation (histogram) of the findings. The script handles various edge cases in the text formatting and provides a comprehensive statistical overview of the obituary lengths.

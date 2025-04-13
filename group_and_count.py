@@ -10,6 +10,10 @@
 #     "obituary_text": "...",
 #     "word_count": 100
 # }
+
+# identify where the obituary starts and ends
+# regex to find: 1913 - 2010 OR **1938-2017** or 1948-2010 or Dave Cuthbertson1948 - 2019
+
 import json
 import re
 from pathlib import Path
