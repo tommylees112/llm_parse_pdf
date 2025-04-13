@@ -14,6 +14,11 @@
 # identify where the obituary starts and ends
 # regex to find: 1913 - 2010 OR **1938-2017** or 1948-2010 or Dave Cuthbertson1948 - 2019
 
+# TODO:
+# 1. if the name is empty send the first 3 sentences to an LLM to extract the most likely name
+# 2. find the birth_year and death_year from the obituary text
+# 3. calculate the age & add the age to the json
+
 import json
 import re
 from pathlib import Path
@@ -125,6 +130,28 @@ if __name__ == "__main__":
                 # Fallback if no date is found
                 name = "Unknown"
 
+            # Extract birth and death years
+            year_pattern = r"(\d{4})\s*-\s*(\d{4})|\*\*(\d{4})-(\d{4})\*\*"
+            year_match = re.search(year_pattern, obituary_text)
+            if year_match:
+                # Handle both formats: "1913 - 2010" and "**1938-2017**"
+                if year_match.group(1) and year_match.group(2):
+                    birth_year = int(year_match.group(1))
+                    death_year = int(year_match.group(2))
+                else:
+                    birth_year = int(year_match.group(3))
+                    death_year = int(year_match.group(4))
+            else:
+                birth_year = None
+                death_year = None
+
+            # Calculate age if both years are available
+            age = (
+                death_year - birth_year
+                if birth_year is not None and death_year is not None
+                else None
+            )
+
             # Count words
             word_count = len(obituary_text.split())
 
@@ -133,9 +160,17 @@ if __name__ == "__main__":
                 "name": name,
                 "obituary_text": obituary_text,
                 "word_count": word_count,
+                "birth_year": birth_year,
+                "death_year": death_year,
+                "age": age,
             }
 
             obituaries.append(obituary)
+
+    # Sort obituaries by age (low to high, None at end) and then by word_count
+    obituaries.sort(
+        key=lambda x: (float("inf") if x["age"] is None else x["age"], x["word_count"])
+    )
 
     # Output the results
     logger.info(f"Processed {len(obituaries)} obituaries")
